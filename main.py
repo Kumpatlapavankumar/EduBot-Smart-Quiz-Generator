@@ -11,6 +11,8 @@ from langchain.schema import SystemMessage, HumanMessage
 from langchain.docstore.document import Document
 
 FILE_PATH = "quiz_vector_store.pkl"
+
+# Load API key
 if "OPENAI_API_KEY" in st.secrets:
     os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 else:
@@ -38,6 +40,10 @@ def get_quiz(prompt):
 
 # ---------------------- PROCESSING ----------------------
 def process_documents(docs):
+    if not docs:
+        st.error("❌ No documents found to process.")
+        return False
+
     text_splitter = RecursiveCharacterTextSplitter(
         separators=["\n\n", "\n", ".", " "],
         chunk_size=3000,
@@ -45,8 +51,18 @@ def process_documents(docs):
     )
     docs = text_splitter.split_documents(docs)
 
+    if not docs:
+        st.error("❌ Document splitting failed. No chunks were created.")
+        return False
+
+    st.write(f"📄 Total chunks created: {len(docs)}")
+
     embeddings = OpenAIEmbeddings()
-    vector_store = FAISS.from_documents(docs, embeddings)
+    try:
+        vector_store = FAISS.from_documents(docs, embeddings)
+    except IndexError:
+        st.error("❌ Failed to create FAISS index. Possibly no valid embeddings were generated.")
+        return False
 
     with open(FILE_PATH, "wb") as fb:
         pickle.dump(vector_store, fb)
@@ -54,25 +70,37 @@ def process_documents(docs):
     return True
 
 def process_from_urls(urls):
-    loader = UnstructuredURLLoader(urls=urls)
-    docs = loader.load()
+    try:
+        loader = UnstructuredURLLoader(urls=urls)
+        docs = loader.load()
+    except Exception as e:
+        st.error(f"❌ Error loading from URLs: {e}")
+        return False
+
     return process_documents(docs)
 
 def process_from_files(uploaded_files):
     all_docs = []
     for uploaded_file in uploaded_files:
-        if uploaded_file.name.endswith(".txt"):
-            text = uploaded_file.read().decode("utf-8")
-            docs = [Document(page_content=text, metadata={"source": uploaded_file.name})]
-        elif uploaded_file.name.endswith(".pdf"):
-            with open("temp_file.pdf", "wb") as f:
-                f.write(uploaded_file.getbuffer())
-            loader = PyPDFLoader("temp_file.pdf")
-            docs = loader.load()
-        else:
-            st.warning(f"Unsupported file type: {uploaded_file.name}")
-            continue
-        all_docs.extend(docs)
+        try:
+            if uploaded_file.name.endswith(".txt"):
+                text = uploaded_file.read().decode("utf-8")
+                if text.strip():
+                    docs = [Document(page_content=text, metadata={"source": uploaded_file.name})]
+                else:
+                    st.warning(f"{uploaded_file.name} is empty.")
+                    continue
+            elif uploaded_file.name.endswith(".pdf"):
+                with open("temp_file.pdf", "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+                loader = PyPDFLoader("temp_file.pdf")
+                docs = loader.load()
+            else:
+                st.warning(f"Unsupported file type: {uploaded_file.name}")
+                continue
+            all_docs.extend(docs)
+        except Exception as e:
+            st.error(f"Error processing file {uploaded_file.name}: {e}")
     return process_documents(all_docs)
 
 # ---------------------- QUIZ GENERATION ----------------------
@@ -86,6 +114,11 @@ def generate_quiz(topic, quiz_type="MCQ", num_questions=5):
 
     retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
     retrieved_docs = retriever.get_relevant_documents(topic)
+
+    if not retrieved_docs:
+        st.error("❌ No relevant content found for the given topic.")
+        return None
+
     combined_text = "\n".join(doc.page_content for doc in retrieved_docs)
 
     prompt = generate_prompt(combined_text, quiz_type, num_questions)
@@ -100,7 +133,7 @@ st.markdown("---")
 
 tab1, tab2 = st.tabs(["📂 Process Content", "📝 Generate Quiz"])
 
-# ----------- TAB 1 -----------
+# ----------- TAB 1 ------------
 with tab1:
     st.subheader("📄 Add Content")
 
@@ -122,12 +155,11 @@ with tab1:
         if uploaded_files:
             processed = process_from_files(uploaded_files)
         if processed:
-            st.success("✅ Content successfully processed and stored! and now you can go to the generate quiz section to generate the quiz")
+            st.success("✅ Content successfully processed and stored! Now go to the quiz generation section to create a quiz.")
 
-# ----------- TAB 2 -----------
+# ----------- TAB 2 ------------
 with tab2:
     st.subheader("🎯 Quiz Settings")
-
     st.markdown("Customize your quiz below:")
 
     col1, col2, col3 = st.columns(3)
