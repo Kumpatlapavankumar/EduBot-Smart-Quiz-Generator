@@ -3,13 +3,14 @@ import os
 import pickle
 from dotenv import load_dotenv
 from langchain.chat_models import ChatOpenAI
-from langchain.document_loaders import UnstructuredURLLoader, PyPDFLoader
+from langchain.document_loaders import UnstructuredURLLoader, PyMuPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.schema import SystemMessage, HumanMessage
 from langchain.docstore.document import Document
-
+import nltk
+nltk.download('punkt')
 FILE_PATH = "quiz_vector_store.pkl"
 
 # Load API key
@@ -93,7 +94,7 @@ def process_from_files(uploaded_files):
             elif uploaded_file.name.endswith(".pdf"):
                 with open("temp_file.pdf", "wb") as f:
                     f.write(uploaded_file.getbuffer())
-                loader = PyPDFLoader("temp_file.pdf")
+                loader = PyMuPDFLoader("temp_file.pdf")
                 docs = loader.load()
             else:
                 st.warning(f"Unsupported file type: {uploaded_file.name}")
