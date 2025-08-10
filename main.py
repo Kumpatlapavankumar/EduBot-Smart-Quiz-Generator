@@ -184,5 +184,5 @@ with tab2:
                 if quiz:
                     st.success("✅ Quiz generated!")
                     st.subheader("📋 Your Quiz")
-                    st.text_area("Quiz Output", quiz, height=400)
+                    st.text_area("Quiz Output", quiz, height=700)
                     st.download_button("📥 Download Quiz", quiz, file_name=f"{topic.replace(' ', '_')}_quiz.txt")
