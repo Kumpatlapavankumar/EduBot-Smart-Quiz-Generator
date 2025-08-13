@@ -1,77 +1,94 @@
-# Python Project
+# 🧠 Smart Quiz Generator
 
-This repository contains a Python project with a main application script (`main.py`) and a `requirements.txt` file listing the dependencies needed to run the project.
+An interactive **AI-powered quiz creation tool** built with **Streamlit** and **LangChain** that uses **GPT-4** to generate quizzes from your own documents (PDF/TXT) or web content (URLs).  
+The app processes your content, stores it in a **FAISS vector database**, and lets you create customized quizzes on any topic.
 
 ---
 
 ## 📌 Features
-- Runs directly from `main.py`
-- Easy setup with dependencies listed in `requirements.txt`
-- Cross-platform compatibility
+- Upload **PDF** or **TXT** files, or provide **web URLs**.
+- Process documents into searchable vector embeddings using **OpenAI embeddings**.
+- Create quizzes in multiple formats:
+  - Multiple Choice Questions (MCQ)
+  - True/False
+  - Fill-in-the-Blank
+- Customizable number of questions.
+- Download generated quizzes as text files.
 
 ---
 
-## 🛠️ Installation
-
-Follow these steps to set up and run the project locally.
+## 🛠 Installation
 
 ### 1️⃣ Clone the repository
 ```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
+git clone https://github.com/kumpatlapavankumar/EduBot-Smart-Quiz-Generator.git
+cd smart-quiz-generator
 ```
 
-### 2️⃣ (Optional) Create and activate a virtual environment
-```bash
-python -m venv venv
-```
-
-Activate it:
-- **Windows:**
-```bash
-venv\Scripts\activate
-```
-- **Mac/Linux:**
-```bash
-source venv/bin/activate
-```
-
-### 3️⃣ Install dependencies
+### 2️⃣ Install dependencies
 ```bash
 pip install -r requirements.txt
+```
+
+### 3️⃣ Set your OpenAI API key
+Create a `.env` file in the project folder and add:
+```env
+OPENAI_API_KEY=your_api_key_here
+```
+Or use **Streamlit Secrets** for deployment:
+```toml
+# .streamlit/secrets.toml
+OPENAI_API_KEY = "your_api_key_here"
 ```
 
 ---
 
 ## 🚀 Usage
 
-Run the main script:
+Run the app locally:
 ```bash
-python main.py
+streamlit run main.py
 ```
 
-If the script requires arguments, run it like:
-```bash
-python main.py --option value
-```
+### **Tab 1 – Process Content**
+- Paste URLs or upload PDF/TXT files.
+- Click **"🚀 Process Content"** to store embeddings.
+
+### **Tab 2 – Generate Quiz**
+- Enter a topic (e.g., *Machine Learning Basics*).
+- Select quiz type and number of questions.
+- Click **"✨ Generate Quiz"** to create your quiz.
+- Download the quiz as a `.txt` file.
 
 ---
 
 ## 📂 Project Structure
 ```
 .
-├── main.py             # Main application script
-├── requirements.txt    # Python dependencies
-└── README.md           # Documentation
+├── main.py                 # Main Streamlit application
+├── requirements.txt        # Python dependencies
+├── quiz_vector_store.pkl   # Generated FAISS vector store (after processing)
+└── README.md               # Documentation
 ```
 
 ---
 
-## 📋 Requirements
-- Python 3.x
-- All packages listed in `requirements.txt`
+## 📦 Tech Stack
+- **Python**
+- **Streamlit** – Web app framework
+- **LangChain** – Document processing & LLM integration
+- **OpenAI GPT-4** – Quiz generation
+- **FAISS** – Vector storage & retrieval
+- **PyMuPDF** – PDF parsing
+- **nltk** – Text processing
 
 ---
 
 ## 📝 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
+
+---
+
+## 👨‍💻 Author
+**Pavankumar**  
+💡 Powered by **GPT-4**, **LangChain**, and **Streamlit**.
